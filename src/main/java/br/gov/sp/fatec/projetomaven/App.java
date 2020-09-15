@@ -5,22 +5,22 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceException;
-import javax.persistence.TypedQuery;
-import javax.persistence.EntityManagerFactory;
+
+import br.gov.sp.fatec.projetomaven.dao.TrabalhoDao;
+import br.gov.sp.fatec.projetomaven.dao.TrabalhoDaoJpa;
 import br.gov.sp.fatec.projetomaven.entity.Aluno;
 import br.gov.sp.fatec.projetomaven.entity.Trabalho;
 import br.gov.sp.fatec.projetomaven.entity.Professor;
+import br.gov.sp.fatec.projetomaven.entity.PersistenceManager;
 
 public class App 
 {
     public static void main( String[] args )
     {
-        EntityManagerFactory factory = Persistence
-                .createEntityManagerFactory("projeto_maven"); // Nome da persistency unit
-        EntityManager manager = factory.createEntityManager();
+        EntityManager manager = PersistenceManager.getInstance().getEntityManager();
         
         Aluno aluno = new Aluno();
         aluno.setNomeUsuario("alunotemp");
@@ -39,17 +39,8 @@ public class App
         trabalho.setAlunos(new HashSet<Aluno>());
         trabalho.getAlunos().add(aluno);
 
-        try{
-            manager.getTransaction().begin();
-            manager.persist(aluno);
-            manager.persist(professor);
-            manager.persist(trabalho);
-            manager.getTransaction().commit();
-        }
-        catch(PersistenceException e){
-            e.printStackTrace();
-            manager.getTransaction().rollback();
-        }
+        TrabalhoDao trabalhoDao = new TrabalhoDaoJpa(manager);
+        trabalhoDao.salvarTrabalho(trabalho);
        
         // FAZ UMA BUSCA E RETORNA OS RESULTADOS
         String aux = "select t from Trabalho t where t.titulo like :titulo";
